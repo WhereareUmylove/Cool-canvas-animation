@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>画笔</title>
+		<style type="text/css">
+			html,body{
+				padding: 0;
+				margin: 0;
+				overflow: hidden;
+				background: white;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas"width="1366" height="626"></canvas>
+	</body>
+	<script src="js/bezierMaker.js" type="text/javascript" charset="utf-8"></script>
+	<script>
+		var canvas = document.getElementById("canvas");
+		var ctx = canvas.getContext("2d");
+		//对象个数(已经出现在画布的图形个数)
+		var count = 0 ;
+		//图形对象数组。
+		var FigureObject = [];
+		
+		//截取minNum到maxNum之间的随机数。
+		function RandomNum(minNum,maxNum){
+			return Math.random()*(maxNum-minNum)+minNum;
+		}
+		
+		//鼠标移动时做什么。
+		canvas.onmousemove = function (e) {
+		    e = e || window.event;
+			var Mx = e.clientX;
+			var My = e.clientY;
+			//for(var i=0;i<5;i++){
+				CreateFigureObject(Mx,My);
+			//}
+		};
+		
+		function CreateFigureObject(Mx,My){
+			//图形大小
+			var FigureSize = RandomNum(1,15);
+			//图形的颜色
+			var Rgb = Math.floor( Math.random()*255 ) + "," + Math.floor( Math.random()*255 ) + "," + Math.floor( Math.random()*255 );
+			
+			var Life = 100;
+			var son = count;
+			var vx = Math.random() * 2 - 1;
+		    var vy = Math.random() * 2 - 1;
+			var x = Mx;
+			var y = My;
+			FigureObject.push(new Figure(x,y,vx,vy,FigureSize,Rgb,Life,son,1));
+		}
+
+		//FigureObject对象的构造函数。
+		function Figure(x,y,vx,vy,FigureSize,Rgb,Life,son,opacity){
+			
+			this.color = Rgb;
+			this.size = FigureSize;
+			this.x = x;
+			this.y = y;
+			this.vx = vx;//偏移
+			this.vy = vy;//偏移
+			this.life = Life;
+			this.son = son;
+			this.opacity = opacity;
+			this.s = 3 ;
+			this.r = RandomNum(1,5) ;
+			
+			//利用贝塞尔画图插件画图。
+			this.Bezier = function(){
+				//设置图形点位置的数组。
+				var arrPoint = LocationPoint(this.x,this.y);
+				ctx.strokeStyle = "rgba("+this.color+","+this.opacity+")";
+				ctx.fillStyle = "rgba("+this.color+","+this.opacity+")";
+				
+				var xxx = new BezierMaker(canvas,arrPoint,this.color);
+				xxx.drawBezier();
+
+				ctx.fill();
+			};
+			
+			this.DrawFigure = function(){
+				ctx.beginPath();
+				ctx.fillStyle = "rgba("+this.color+","+this.opacity+")";
+				ctx.arc(this.x,this.y,this.size,0,2*Math.PI);
+				ctx.fill();
+			};
+			
+			this.updateFigure = function(){
+				if (this.x + this.vx >= innerWidth || this.x + this.vx <= 0) {
+		            this.vx = -this.vx;
+		       }
+		        if (this.y + this.vy >= innerHeight || this.y + this.vy <= 0) {
+		            this.vy = -this.vy;
+		        }
+		        this.x += this.vx*3;
+		        this.y += this.vy*3;
+
+		        
+		        this.opacity = 1 - (count - this.son) / this.life;
+		        
+		        if(count>this.life+this.son){
+					for (var i = 0; i < FigureObject.length; i++) {
+	                    if (this.son == FigureObject[i].son && this.life == FigureObject[i].life) {
+		                    FigureObject.splice(i, 1);
+		                    break;
+		                }
+		            }
+				}else{
+					//this.DrawHeart();
+					this.DrawFigure();
+					//this.Bezier();
+				}
+			}
+			this.DrawHeart = function(){
+				ctx.fillStyle = "rgba("+this.color+","+this.opacity+")";
+				
+		        ctx.beginPath();
+		        var p01 = rotate(this.x + 2 * this.s, this.y, this.x, this.y, this.r);
+		        var p02 = rotate(this.x + 12 * this.s, this.y - 16 * this.s, this.x, this.y, this.r);
+		        var p03 = rotate(this.x, this.y - 10 * this.s, this.x, this.y, this.r);
+		
+		        var p11 = rotate(this.x - 2 * this.s, this.y, this.x, this.y, this.r);
+		        var p12 = rotate(this.x - 12 * this.s, this.y - 16 * this.s, this.x, this.y, this.r);
+		        var p13 = rotate(this.x, this.y - 10 * this.s, this.x, this.y, this.r);
+		        ctx.moveTo(this.x, this.y);
+		        ctx.bezierCurveTo(p01.x, p01.y, p02.x, p02.y, p03.x, p03.y);
+		        ctx.moveTo(this.x, this.y);
+		        ctx.bezierCurveTo(p11.x, p11.y, p12.x, p12.y, p13.x, p13.y);
+		        
+		        ctx.closePath();
+				ctx.fill();
+			}
+		}
+		
+		
+		function upData(){
+			requestAnimationFrame(upData);
+			count ++;
+			ctx.clearRect(0, 0,1366,626);
+			for(var i=0;i<FigureObject.length;i++){
+				FigureObject[i].updateFigure();
+			}
+		}
+		upData();
+		
+		function rotate(x, y, x0, y0, r) {
+		    var x1 = (x - x0) * Math.cos(r) - (y - y0) * Math.sin(r) + x0;
+		    var y1 = (x - x0) * Math.sin(r) + (y - y0) * Math.cos(r) + y0;
+		    return { x: x1, y: y1 }
+		 }
+
+		//以下和贝塞尔曲线相关:
+		//手动输入的点位置 
+		var locationP1 = [{x:319,y:99},
+								  	{x:249,y:180},
+								  	{x:318,y:263},
+								  	{x:371,y:189},
+								  	{x:320,y:101}];
+		//点与图形中心的距离
+		var locationP2 = new Array();
+
+		//设置图形出现的位置
+		function LocationPoint(Mx,My){
+		  	//最终确立的点的位置。
+			var locationP3 = new Array();
+			
+			var xSum = 0 ;
+			var ySum = 0 ;
+		  	for(var i=0;i<+locationP1.length;i++){
+		  		xSum += locationP1[i].x;
+		  		ySum += locationP1[i].y;
+		  	}
+		  	var aveX = xSum/locationP1.length;
+		  	var aveY = ySum/locationP1.length;
+		  	for(var j=0;j<+locationP1.length;j++){
+				//点距离中心点的距离,正为右便宜，负为左偏移。
+			  	locationP2[j] = {x:locationP1[j].x-aveX , y:locationP1[j].y-aveY};
+			  	locationP3[j] = {x:Mx+locationP2[j].x , y:My+locationP2[j].y};
+		  	}
+		  	return locationP3;
+		}
+
+		
+	</script>
+</html>
