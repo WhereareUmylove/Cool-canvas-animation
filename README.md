@@ -5,4 +5,7 @@ In the canvas, there are many graphics dancing with your mouse, you can also cus
 https://htmlpreview.github.io/?https://github.com/WhereareUmylove/Cool-canvas-animation/blob/master/MouseMove/MouseMove.html
 
 
-<p>通过修改代码中的函数调用，可以修改动画形状，还可以自定义形状</p>
+<p>通过修改代码中的函数调用，</p><p>代码位置：</p><p>//this.DrawHeart();</p>
+					<p>this.DrawFigure();</p>
+					<p>//this.Bezier();</p>，<p>可以修改动画形状，还可以自定义形状</p>
+自定义形状可以打开playground.html查看。
