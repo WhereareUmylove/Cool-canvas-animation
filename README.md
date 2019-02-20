@@ -3,3 +3,6 @@
 In the canvas, there are many graphics dancing with your mouse, you can also customize graphics. Let's have a try.  
 运行地址：  (可能不可线上运行，请下载后运行)
 https://htmlpreview.github.io/?https://github.com/WhereareUmylove/Cool-canvas-animation/blob/master/MouseMove/MouseMove.html
+
+
+<p>通过修改代码中的函数调用，可以修改动画形状，还可以自定义形状</p>
